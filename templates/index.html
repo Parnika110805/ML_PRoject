@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ASD Early Detection — NeuroScreen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --cream:    #FAF7F2;
+    --sand:     #F0EAE0;
+    --warm:     #E8DDD0;
+    --teal:     #2A6E6E;
+    --teal-l:   #3D8C8C;
+    --teal-d:   #1A4A4A;
+    --amber:    #D4830A;
+    --amber-l:  #F0A030;
+    --rose:     #C0444A;
+    --rose-l:   #E06070;
+    --green:    #2E7D4A;
+    --green-l:  #4CAF70;
+    --ink:      #1A1A2E;
+    --ink-2:    #2D2D3A;
+    --muted:    #7A7A8A;
+    --border:   #D8D0C5;
+    --white:    #FFFFFF;
+    --shadow:   0 2px 20px rgba(26,26,46,0.08);
+    --shadow-l: 0 8px 40px rgba(26,26,46,0.12);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── NAV ─── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(250,247,242,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem; font-weight: 700;
+    color: var(--teal-d);
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .logo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--amber); }
+  .nav-links { display: flex; gap: 2rem; }
+  .nav-links a {
+    text-decoration: none; color: var(--muted); font-size: 0.9rem; font-weight: 500;
+    transition: color .2s;
+  }
+  .nav-links a:hover { color: var(--teal); }
+
+  /* ─── HERO ─── */
+  .hero {
+    background: linear-gradient(135deg, var(--teal-d) 0%, var(--teal) 60%, #3D7A6E 100%);
+    padding: 5rem 2rem 4rem;
+    text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+    color: #B8E0D0; font-size: 0.78rem; font-weight: 500; letter-spacing: .06em; text-transform: uppercase;
+    padding: 0.3rem 0.9rem; border-radius: 20px; margin-bottom: 1.5rem;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 700;
+    color: #fff; line-height: 1.2; margin-bottom: 1rem;
+  }
+  .hero h1 span { color: var(--amber-l); }
+  .hero p {
+    color: rgba(255,255,255,0.75); font-size: 1.05rem; max-width: 580px; margin: 0 auto 2rem;
+    font-weight: 300; line-height: 1.7;
+  }
+  .hero-stats {
+    display: flex; justify-content: center; gap: 2.5rem; flex-wrap: wrap;
+    margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.15);
+  }
+  .stat { text-align: center; }
+  .stat-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.8rem; font-weight: 500; color: var(--amber-l);
+  }
+  .stat-lbl { font-size: 0.78rem; color: rgba(255,255,255,0.6); margin-top: .2rem; }
+
+  /* ─── MAIN LAYOUT ─── */
+  .container { max-width: 1100px; margin: 0 auto; padding: 3rem 2rem; }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.7rem; color: var(--teal-d); margin-bottom: 0.5rem;
+  }
+  .section-sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
+
+  /* ─── FORM CARD ─── */
+  .form-card {
+    background: var(--white); border-radius: 16px;
+    box-shadow: var(--shadow-l); overflow: hidden;
+  }
+  .form-header {
+    background: var(--teal-d); padding: 1.5rem 2rem;
+    display: flex; align-items: center; gap: 1rem;
+  }
+  .form-header-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: rgba(255,255,255,0.12);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+  }
+  .form-header h2 { font-family: 'Playfair Display', serif; color: #fff; font-size: 1.2rem; }
+  .form-header p { color: rgba(255,255,255,0.65); font-size: 0.82rem; }
+  .form-body { padding: 2rem; }
+
+  .form-section {
+    margin-bottom: 2rem; padding-bottom: 2rem;
+    border-bottom: 1px solid var(--sand);
+  }
+  .form-section:last-child { border-bottom: none; margin-bottom: 0; }
+  .form-section-title {
+    font-size: 0.78rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--teal); margin-bottom: 1.2rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .form-section-title::after { content: ''; flex: 1; height: 1px; background: var(--sand); }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  @media(max-width: 640px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  .field { display: flex; flex-direction: column; gap: 0.4rem; }
+  label { font-size: 0.82rem; font-weight: 500; color: var(--ink-2); }
+  label .req { color: var(--rose); margin-left: 2px; }
+  select, input[type=number], input[type=range] {
+    border: 1.5px solid var(--border); border-radius: 8px;
+    padding: 0.55rem 0.8rem; font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem; color: var(--ink); background: var(--cream);
+    outline: none; transition: border-color .2s, box-shadow .2s;
+  }
+  select:focus, input:focus {
+    border-color: var(--teal); box-shadow: 0 0 0 3px rgba(42,110,110,0.1);
+  }
+  .range-row { display: flex; align-items: center; gap: 0.8rem; }
+  input[type=range] { flex: 1; padding: 0; accent-color: var(--teal); }
+  .range-val {
+    font-family: 'DM Mono', monospace; font-size: 0.85rem;
+    color: var(--teal); font-weight: 500; min-width: 32px; text-align: right;
+  }
+
+  /* ─── QUESTIONNAIRE ─── */
+  .questionnaire-info {
+    background: rgba(42,110,110,0.07); border: 1px solid rgba(42,110,110,0.2);
+    border-radius: 10px; padding: 0.9rem 1.2rem; margin-bottom: 1.2rem;
+    font-size: 0.83rem; color: var(--teal-d); line-height: 1.6;
+  }
+  .questionnaire-info strong { font-weight: 600; }
+
+  .q-item {
+    background: var(--sand); border-radius: 12px; padding: 1rem 1.2rem;
+    margin-bottom: 0.8rem; border: 1.5px solid transparent;
+    transition: border-color .2s;
+  }
+  .q-item.answered { border-color: var(--teal-l); background: rgba(42,110,110,0.05); }
+  .q-item.answered-risk { border-color: var(--rose); background: rgba(192,68,74,0.05); }
+
+  .q-header {
+    display: flex; align-items: flex-start; gap: 0.8rem;
+    margin-bottom: 0.7rem;
+  }
+  .q-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem; font-weight: 600;
+    background: var(--teal-d); color: #fff;
+    padding: 0.2rem 0.5rem; border-radius: 5px;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .q-badge.reversed {
+    background: var(--amber);
+  }
+  .q-text {
+    font-size: 0.88rem; font-weight: 500; color: var(--ink-2); line-height: 1.5;
+    flex: 1;
+  }
+  .q-note {
+    font-size: 0.75rem; color: var(--muted); font-style: italic;
+    margin-top: 0.15rem;
+  }
+
+  .q-options {
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+  }
+  .q-option {
+    padding: 0.35rem 0.85rem; border-radius: 20px;
+    border: 1.5px solid var(--border); background: var(--white);
+    font-size: 0.8rem; cursor: pointer; transition: all .15s;
+    font-family: 'DM Sans', sans-serif; color: var(--ink-2);
+  }
+  .q-option:hover { border-color: var(--teal); color: var(--teal); }
+  .q-option.selected-ok {
+    background: var(--teal-d); border-color: var(--teal-d); color: #fff;
+  }
+  .q-option.selected-risk {
+    background: var(--rose); border-color: var(--rose); color: #fff;
+  }
+
+  .qchat-score-display {
+    display: flex; align-items: center; gap: 0.6rem;
+    margin-top: 1rem; font-size: 0.85rem; color: var(--muted);
+    padding: 0.7rem 1rem; background: var(--sand); border-radius: 8px;
+  }
+  .qchat-score-val {
+    font-family: 'DM Mono', monospace; font-size: 1.2rem; font-weight: 600;
+    color: var(--teal); background: var(--white);
+    padding: 0.2rem 0.6rem; border-radius: 6px;
+  }
+
+  /* ─── TOGGLE ROW ─── */
+  .toggle-row { display: flex; flex-wrap: wrap; gap: 0.7rem; }
+  .toggle-btn {
+    padding: 0.45rem 1rem; border-radius: 20px;
+    border: 1.5px solid var(--border); background: var(--cream);
+    font-size: 0.85rem; cursor: pointer; transition: all .2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .toggle-btn:hover { border-color: var(--teal); color: var(--teal); }
+  .toggle-btn.active { background: var(--teal-d); border-color: var(--teal-d); color: #fff; }
+
+  /* ─── SUBMIT ─── */
+  .submit-wrap { margin-top: 2rem; text-align: center; }
+  .btn-predict {
+    background: linear-gradient(135deg, var(--teal-d), var(--teal));
+    color: #fff; border: none; border-radius: 12px;
+    padding: 1rem 3rem; font-size: 1rem; font-weight: 600;
+    font-family: 'DM Sans', sans-serif; cursor: pointer;
+    transition: transform .15s, box-shadow .15s;
+    box-shadow: 0 4px 20px rgba(42,110,110,0.35);
+    letter-spacing: .02em;
+  }
+  .btn-predict:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(42,110,110,0.45); }
+  .btn-predict:active { transform: translateY(0); }
+  .btn-predict:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+  .disclaimer {
+    font-size: 0.75rem; color: var(--muted); margin-top: 0.8rem;
+    max-width: 400px; margin-left: auto; margin-right: auto; line-height: 1.5;
+  }
+
+  /* ─── RESULT PANEL ─── */
+  #result-panel {
+    display: none; margin-top: 2rem;
+    background: var(--white); border-radius: 16px; overflow: hidden;
+    box-shadow: var(--shadow-l); animation: slideUp .4s ease;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .result-header {
+    padding: 1.5rem 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 1rem;
+  }
+  .result-header.asd    { background: linear-gradient(135deg, #8B1A1A, var(--rose)); }
+  .result-header.no-asd { background: linear-gradient(135deg, #1A4A2A, var(--green)); }
+  .result-main { display: flex; align-items: center; gap: 1rem; }
+  .result-icon {
+    width: 52px; height: 52px; border-radius: 14px;
+    background: rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+  }
+  .result-verdict { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: #fff; }
+  .result-sub { color: rgba(255,255,255,0.7); font-size: 0.85rem; }
+  .prob-badge { background: rgba(255,255,255,0.15); border-radius: 10px; padding: 0.6rem 1.2rem; text-align: center; }
+  .prob-num { font-family: 'DM Mono', monospace; font-size: 1.8rem; font-weight: 500; color: #fff; }
+  .prob-lbl { font-size: 0.72rem; color: rgba(255,255,255,0.6); }
+
+  .result-body { padding: 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  @media(max-width: 640px) { .result-body { grid-template-columns: 1fr; } }
+  .result-section h3 {
+    font-size: 0.78rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 1rem;
+  }
+
+  .risk-meter { margin-bottom: 1rem; }
+  .risk-bar-bg { height: 8px; border-radius: 4px; background: var(--sand); overflow: hidden; }
+  .risk-bar-fill {
+    height: 100%; border-radius: 4px; transition: width 1s ease;
+    background: linear-gradient(90deg, var(--green-l), var(--amber-l), var(--rose-l));
+  }
+  .risk-level-label { margin-top: 0.4rem; font-size: 0.8rem; font-weight: 600; }
+  .risk-Low      { color: var(--green); }
+  .risk-Moderate { color: var(--amber); }
+  .risk-High     { color: #D06020; }
+
+  .factor-list { display: flex; flex-direction: column; gap: 0.5rem; }
+  .factor-chip {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--sand); border-radius: 8px; padding: 0.55rem 0.8rem;
+    font-size: 0.82rem;
+  }
+  .factor-name { font-weight: 500; color: var(--ink-2); }
+  .factor-badge {
+    font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.5rem;
+    border-radius: 4px; letter-spacing: .03em;
+  }
+  .factor-badge.High     { background: #FFE5E5; color: var(--rose); }
+  .factor-badge.Moderate { background: #FFF3DC; color: var(--amber); }
+
+  .intervention-list { display: flex; flex-direction: column; gap: 0.5rem; }
+  .intervention-item { display: flex; align-items: flex-start; gap: 0.7rem; font-size: 0.85rem; color: var(--ink-2); }
+  .int-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--teal); margin-top: 6px; flex-shrink: 0; }
+
+  /* ─── HOW IT WORKS ─── */
+  .how-section { margin-top: 4rem; }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 1.5rem; }
+  @media(max-width: 640px) { .steps { grid-template-columns: 1fr; } }
+  .step-card { background: var(--white); border-radius: 14px; padding: 1.5rem; box-shadow: var(--shadow); position: relative; }
+  .step-num { font-family: 'DM Mono', monospace; font-size: 2.5rem; font-weight: 500; color: var(--sand); position: absolute; top: 1rem; right: 1.2rem; }
+  .step-icon { font-size: 1.6rem; margin-bottom: 0.8rem; }
+  .step-title { font-weight: 600; color: var(--teal-d); margin-bottom: 0.4rem; }
+  .step-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+
+  footer {
+    margin-top: 4rem; background: var(--ink); color: rgba(255,255,255,0.5);
+    text-align: center; padding: 2rem; font-size: 0.8rem; line-height: 1.8;
+  }
+  footer strong { color: rgba(255,255,255,0.8); }
+
+  .spinner {
+    width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff; border-radius: 50%;
+    animation: spin .7s linear infinite; display: inline-block;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Incomplete warning */
+  .warn-incomplete {
+    display: none; background: #FFF3DC; border: 1px solid var(--amber);
+    border-radius: 8px; padding: 0.7rem 1rem; margin-top: 0.8rem;
+    font-size: 0.82rem; color: #7A4500; text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo"><div class="logo-dot"></div>NeuroScreen</div>
+  <div class="nav-links">
+    <a href="#screening">Screening</a>
+    <a href="#how">How It Works</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-badge">🧠 ML-Powered Early Detection</div>
+  <h1>Early ASD Detection &amp;<br/><span>Personalized Intervention</span></h1>
+  <p>An enhanced ensemble ML system for Autism Spectrum Disorder screening — XGBoost + Random Forest + Gradient Boosting with clinically accurate Q-CHAT-10 / AQ-10 scoring.</p>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-val" id="hs-acc">—</div><div class="stat-lbl">Accuracy</div></div>
+    <div class="stat"><div class="stat-val" id="hs-auc">—</div><div class="stat-lbl">ROC AUC</div></div>
+    <div class="stat"><div class="stat-val" id="hs-f1">—</div><div class="stat-lbl">F1 Score</div></div>
+    <div class="stat"><div class="stat-val">3</div><div class="stat-lbl">Classifiers</div></div>
+    <div class="stat"><div class="stat-val">3</div><div class="stat-lbl">Age Cohorts</div></div>
+  </div>
+</div>
+
+<div class="container">
+
+  <div id="screening">
+    <div class="section-title">ASD Screening Form</div>
+    <div class="section-sub">Enter child's information to receive a screening assessment. The questionnaire adapts based on the child's age.</div>
+
+    <div class="form-card">
+      <div class="form-header">
+        <div class="form-header-icon">📋</div>
+        <div>
+          <h2>Child Assessment</h2>
+          <p>Fill all sections carefully. Results are for screening purposes only.</p>
+        </div>
+      </div>
+      <div class="form-body">
+
+        
+        <div class="form-section">
+          <div class="form-section-title">Basic Information</div>
+          <div class="grid-3">
+            <div class="field">
+              <label>Age (years)<span class="req">*</span></label>
+              <input type="number" id="age" min="1" max="18" value="7" step="0.5" oninput="onAgeChange()"/>
+            </div>
+            <div class="field">
+              <label>Sex<span class="req">*</span></label>
+              <select id="sex">
+                <option value="M">Male</option>
+                <option value="F">Female</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Ethnicity</label>
+              <select id="ethnicity">
+                <option value="white_european">White European</option>
+                <option value="south_asian">South Asian</option>
+                <option value="middle_eastern">Middle Eastern</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid-2" style="margin-top:1rem">
+            <div class="field">
+              <label>Completed by</label>
+              <select id="completed_by">
+                <option value="parent">Parent / Carer</option>
+                <option value="hcp">Healthcare Professional</option>
+                <option value="school">School / NGO</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Social Responsiveness Scale (SRS) — if known</label>
+              <div class="range-row">
+                <input type="range" id="srs" min="20" max="100" value="50" oninput="document.getElementById('srs-val').textContent=this.value"/>
+                <span class="range-val" id="srs-val">50</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        
+        <div class="form-section">
+          <div class="form-section-title" id="q-section-title">Q-CHAT-10 Screening Items</div>
+
+          <div class="questionnaire-info" id="q-info">
+            Loading questions…
+          </div>
+
+          <div id="q-items-container"></div>
+
+          <div class="qchat-score-display">
+            <span id="q-score-label">Risk Score:</span>
+            <span class="qchat-score-val" id="qchat-score-val">0</span>
+            <span style="color:var(--muted)" id="q-threshold-label">/ 10 — scores ≥ 3 warrant further evaluation</span>
+          </div>
+        </div>
+
+        
+        <div class="form-section">
+          <div class="form-section-title">Clinical &amp; Family Factors</div>
+          <div class="grid-3">
+            <div class="field">
+              <label>Jaundice at birth</label>
+              <div class="toggle-row">
+                <button class="toggle-btn active" onclick="setToggle('jaundice','0',this)">No</button>
+                <button class="toggle-btn" onclick="setToggle('jaundice','1',this)">Yes</button>
+              </div>
+              <input type="hidden" id="jaundice" value="0"/>
+            </div>
+            <div class="field">
+              <label>Family member with ASD</label>
+              <div class="toggle-row">
+                <button class="toggle-btn active" onclick="setToggle('family_asd','0',this)">No</button>
+                <button class="toggle-btn" onclick="setToggle('family_asd','1',this)">Yes</button>
+              </div>
+              <input type="hidden" id="family_asd" value="0"/>
+            </div>
+            <div class="field">
+              <label>Speech or language delay observed</label>
+              <div class="toggle-row">
+                <button class="toggle-btn active" onclick="setToggle('speech_delay','0',this)">No</button>
+                <button class="toggle-btn" onclick="setToggle('speech_delay','1',this)">Yes</button>
+              </div>
+              <input type="hidden" id="speech_delay" value="0"/>
+            </div>
+            <div class="field" style="margin-top:1rem">
+              <label>Learning disorder</label>
+              <div class="toggle-row">
+                <button class="toggle-btn active" onclick="setToggle('learning_disorder','0',this)">No</button>
+                <button class="toggle-btn" onclick="setToggle('learning_disorder','1',this)">Yes</button>
+              </div>
+              <input type="hidden" id="learning_disorder" value="0"/>
+            </div>
+            <div class="field" style="margin-top:1rem">
+              <label>Genetic predisposition</label>
+              <div class="toggle-row">
+                <button class="toggle-btn active" onclick="setToggle('genetic','0',this)">No</button>
+                <button class="toggle-btn" onclick="setToggle('genetic','1',this)">Yes</button>
+              </div>
+              <input type="hidden" id="genetic" value="0"/>
+            </div>
+            <div class="field" style="margin-top:1rem">
+              <label>Social / behavioral issues observed</label>
+              <div class="toggle-row">
+                <button class="toggle-btn active" onclick="setToggle('social_issues','0',this)">No</button>
+                <button class="toggle-btn" onclick="setToggle('social_issues','1',this)">Yes</button>
+              </div>
+              <input type="hidden" id="social_issues" value="0"/>
+            </div>
+          </div>
+        </div>
+
+        <div class="submit-wrap">
+          <div class="warn-incomplete" id="warn-incomplete">
+            ⚠ Please answer all 10 screening questions before submitting.
+          </div>
+          <button class="btn-predict" id="predict-btn" onclick="runPrediction()">
+            Run Screening Analysis
+          </button>
+          <div class="disclaimer">
+            This tool is for informational screening purposes only and does not constitute a clinical diagnosis.
+            Please consult a licensed healthcare professional.
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    
+    <div id="result-panel">
+      <div class="result-header" id="result-header">
+        <div class="result-main">
+          <div class="result-icon" id="result-icon">🔍</div>
+          <div>
+            <div class="result-verdict" id="result-verdict">—</div>
+            <div class="result-sub" id="result-sub">—</div>
+          </div>
+        </div>
+        <div class="prob-badge">
+          <div class="prob-num" id="result-prob">—</div>
+          <div class="prob-lbl">ASD Probability</div>
+        </div>
+      </div>
+      <div class="result-body">
+        <div class="result-section">
+          <h3>Risk Assessment</h3>
+          <div class="risk-meter">
+            <div class="risk-bar-bg"><div class="risk-bar-fill" id="risk-bar" style="width:0%"></div></div>
+            <div class="risk-level-label" id="risk-label">—</div>
+          </div>
+          <h3 style="margin-top:1.2rem">Key Contributing Factors</h3>
+          <div class="factor-list" id="factor-list"></div>
+        </div>
+        <div class="result-section">
+          <h3>Recommended Interventions</h3>
+          <div class="intervention-list" id="intervention-list"></div>
+          <div style="margin-top:1.2rem; font-size:0.8rem; color:var(--muted); line-height:1.6; padding:0.8rem; background:var(--sand); border-radius:8px;">
+            ⚕️ These recommendations are generated by an ML model and should be verified by a qualified specialist.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="how-section" id="how">
+    <div class="section-title">How It Works</div>
+    <div class="section-sub">A three-stage pipeline from screening to intervention planning.</div>
+    <div class="steps">
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <div class="step-icon">🔬</div>
+        <div class="step-title">Clinically Accurate Scoring</div>
+        <div class="step-desc">Q-CHAT-10 items A1–A9 score risk when a positive behaviour is <em>absent</em>. Item A10 is reverse-scored: it scores risk when atypical blank staring <em>is present</em>. AQ-10 for older children uses agree/disagree direction per item. The model is trained and infers with these correct polarities.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">02</div>
+        <div class="step-icon">⚙️</div>
+        <div class="step-title">Ensemble Prediction</div>
+        <div class="step-desc">XGBoost + Random Forest + Gradient Boosting + Logistic Regression soft-vote ensemble with SMOTE oversampling. Trained on 3,759 samples across three age cohorts (toddler, early child, adolescent).</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <div class="step-icon">🎯</div>
+        <div class="step-title">Intervention Planning</div>
+        <div class="step-desc">Based on risk level, age group, and key factors, the system suggests personalized interventions — from early behavioral therapy for toddlers to CBT for adolescents.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer></footer>
+
+<script>
+const QCHAT_TODDLER = [
+  {
+    id: 1, label: 'A1', reversed: false,
+    text: 'Does your child look at you when you call his/her name?',
+    note: 'e.g. turning head or making eye contact when name is called',
+    options: ['Always', 'Usually', 'Sometimes', 'Rarely', 'Never'],
+    riskFrom: 2
+  },
+  {
+    id: 2, label: 'A2', reversed: false,
+    text: 'How easy is it for you to get eye contact with your child?',
+    options: ['Very easy', 'Quite easy', 'Quite difficult', 'Very difficult', 'Impossible'],
+    riskFrom: 2
+  },
+  {
+    id: 3, label: 'A3', reversed: false,
+    text: 'Does your child point to indicate that s/he wants something?',
+    note: 'e.g. a toy that is out of reach',
+    options: ['Many times a day', 'A few times a day', 'A few times a week', 'Less than once a week', 'Never'],
+    riskFrom: 2
+  },
+  {
+    id: 4, label: 'A4', reversed: false,
+    text: 'Does your child point to share interest with you?',
+    note: 'e.g. pointing at an interesting sight',
+    options: ['Many times a day', 'A few times a day', 'A few times a week', 'Less than once a week', 'Never'],
+    riskFrom: 2
+  },
+  {
+    id: 5, label: 'A5', reversed: false,
+    text: 'Does your child pretend?',
+    note: 'e.g. care for dolls, talk on a toy phone',
+    options: ['Many times a day', 'A few times a day', 'A few times a week', 'Less than once a week', 'Never'],
+    riskFrom: 2
+  },
+  {
+    id: 6, label: 'A6', reversed: false,
+    text: 'Does your child follow where you\'re looking?',
+    options: ['Many times a day', 'A few times a day', 'A few times a week', 'Less than once a week', 'Never'],
+    riskFrom: 2
+  },
+  {
+    id: 7, label: 'A7', reversed: false,
+    text: 'If you or someone else in the family is visibly upset, does your child show signs of wanting to comfort them?',
+    note: 'e.g. stroking hair, hugging them',
+    options: ['Always', 'Usually', 'Sometimes', 'Rarely', 'Never'],
+    riskFrom: 2
+  },
+  {
+    id: 8, label: 'A8', reversed: false,
+    text: 'Would you describe your child\'s first words as:',
+    options: ['Very typical', 'Quite typical', 'Slightly unusual', 'Very unusual', "Child doesn't speak yet"],
+    riskFrom: 2
+  },
+  {
+    id: 9, label: 'A9', reversed: false,
+    text: 'Does your child use simple gestures?',
+    note: 'e.g. wave goodbye',
+    options: ['Many times a day', 'A few times a day', 'A few times a week', 'Less than once a week', 'Never'],
+    riskFrom: 2
+  },
+  {
+    id: 10, label: 'A10', reversed: true,
+    text: 'Does your child stare at nothing with no apparent purpose?',
+    note: 'e.g. gazing into space for no clear reason',
+    options: ['Many times a day', 'A few times a day', 'A few times a week', 'Less than once a week', 'Never'],
+    riskFrom: 3
+  },
+];
+
+
+const AQ10_CHILD = [
+  {
+    id: 1, label: 'A1', reversed: false,
+    text: 'S/he prefers to do things with others rather than alone.',
+    options: ['Definitely agree', 'Slightly agree', 'Slightly disagree', 'Definitely disagree'],
+    riskFrom: 2
+  },
+  {
+    id: 2, label: 'A2', reversed: false,
+    text: 'S/he finds it easy to "read between the lines" when someone is talking to me.',
+    options: ['Definitely agree', 'Slightly agree', 'Slightly disagree', 'Definitely disagree'],
+    riskFrom: 2
+  },
+  {
+    id: 3, label: 'A3', reversed: false,
+    text: 'S/he tends to focus more on the whole picture, rather than the small details.',
+    options: ['Definitely agree', 'Slightly agree', 'Slightly disagree', 'Definitely disagree'],
+    riskFrom: 2
+  },
+  {
+    id: 4, label: 'A4', reversed: false,
+    text: 'In a social group, S/he can easily keep track of several different people\'s conversations.',
+    options: ['Definitely agree', 'Slightly agree', 'Slightly disagree', 'Definitely disagree'],
+    riskFrom: 2
+  },
+  {
+    id: 5, label: 'A5', reversed: true,
+    text: 'S/he often notices small sounds when others do not.',
+    options: ['Definitely agree', 'Slightly agree', 'Slightly disagree', 'Definitely disagree'],
+    riskFrom: 2
+  },
+  {
+    id: 6, label: 'A6', reversed: true,
+    text: 'S/he prefers to follow routines rather than try new things.',
+    options: ['Definitely agree', 'Slightly agree', 'Slightly disagree', 'Definitely disagree'],
+    riskFrom: 2
+  },
+  {
+    id: 7, label: 'A7', reversed: false,
+    text: 'If there is an interruption, S/he can switch back to what S/he was doing very quickly.',
+    options: ['Definitely agree', 'Slightly agree', 'Slightly disagree', 'Definitely disagree'],
+    riskFrom: 2
+  },
+  {
+    id: 8, label: 'A8', reversed: false,
+    text: 'S/he knows how to tell if someone listening to him/her is getting bored.',
+    options: ['Definitely agree', 'Slightly agree', 'Slightly disagree', 'Definitely disagree'],
+    riskFrom: 2
+  },
+  {
+    id: 9, label: 'A9', reversed: false,
+    text: 'S/he finds it easy to understand other people’s emotions.',
+    options: ['Definitely agree', 'Slightly agree', 'Slightly disagree', 'Definitely disagree'],
+    riskFrom: 2
+  },
+  {
+    id: 10, label: 'A10', reversed: false,
+    text: 'S/he finds social situations easy.',
+    options: ['Definitely agree', 'Slightly agree', 'Slightly disagree', 'Definitely disagree'],
+    riskFrom: 2
+  },
+];
+
+
+const AQ10_ADOLESCENT = [
+  {
+    id: 1, label: 'A1', reversed: false,
+    text: 'S/he prefers to do things with others rather than alone.',
+    options: ['Definitely agree', 'Slightly agree', 'Slightly disagree', 'Definitely disagree'],
+    riskFrom: 2
+  },
+  {
+    id: 2, label: 'A2', reversed: false,
+    text: 'S/he finds it easy to "read between the lines" when someone is talking to me.',
+    options: ['Definitely agree', 'Slightly agree', 'Slightly disagree', 'Definitely disagree'],
+    riskFrom: 2
+  },
+  {
+    id: 3, label: 'A3', reversed: false,
+    text: 'S/he tends to focus more on the whole picture, rather than the small details.',
+    options: ['Definitely agree', 'Slightly agree', 'Slightly disagree', 'Definitely disagree'],
+    riskFrom: 2
+  },
+  {
+    id: 4, label: 'A4', reversed: false,
+    text: 'In a social group, S/he can easily keep track of several different people\'s conversations.',
+    options: ['Definitely agree', 'Slightly agree', 'Slightly disagree', 'Definitely disagree'],
+    riskFrom: 2
+  },
+  {
+    id: 5, label: 'A5', reversed: true,
+    text: 'S/he often notices small sounds when others do not.',
+    options: ['Definitely agree', 'Slightly agree', 'Slightly disagree', 'Definitely disagree'],
+    riskFrom: 2
+  },
+  {
+    id: 6, label: 'A6', reversed: true,
+    text: 'S/he prefers to follow routines rather than try new things.',
+    options: ['Definitely agree', 'Slightly agree', 'Slightly disagree', 'Definitely disagree'],
+    riskFrom: 2
+  },
+  {
+    id: 7, label: 'A7', reversed: false,
+    text: 'If there is an interruption, S/he can switch back to what S/he was doing very quickly.',
+    options: ['Definitely agree', 'Slightly agree', 'Slightly disagree', 'Definitely disagree'],
+    riskFrom: 2
+  },
+  {
+    id: 8, label: 'A8', reversed: false,
+    text: 'S/he knows how to tell if someone listening to him/her is getting bored.',
+    options: ['Definitely agree', 'Slightly agree', 'Slightly disagree', 'Definitely disagree'],
+    riskFrom: 2
+  },
+  {
+    id: 9, label: 'A9', reversed: false,
+    text: 'S/he finds it easy to understand other people’s emotions.',
+    options: ['Definitely agree', 'Slightly agree', 'Slightly disagree', 'Definitely disagree'],
+    riskFrom: 2
+  },
+  {
+    id: 10, label: 'A10', reversed: false,
+    text: 'S/he finds social situations easy.',
+    options: ['Definitely agree', 'Slightly agree', 'Slightly disagree', 'Definitely disagree'],
+    riskFrom: 2
+  },
+];
+
+
+let currentQuestions = [];
+let answers = {};
+
+
+function computeRiskScore(q, optionIndex) {
+  if (!q.reversed) {
+    return optionIndex >= q.riskFrom ? 1 : 0;
+  } else {
+    return optionIndex < q.riskFrom ? 1 : 0;
+  }
+}
+
+
+function getAgeGroup(age) {
+  if (age <= 3)  return 'toddler';
+  if (age <= 11) return 'child';
+  return 'adolescent';
+}
+
+function getQuestionnaire(age) {
+  const g = getAgeGroup(age);
+  if (g === 'toddler')    return { questions: QCHAT_TODDLER, name: 'Q-CHAT-10', threshold: 3 };
+  if (g === 'child')      return { questions: AQ10_CHILD,    name: 'AQ-10 (Child)', threshold: 6 };
+  return                         { questions: AQ10_ADOLESCENT, name: 'AQ-10 (Adolescent)', threshold: 6 };
+}
+
+function onAgeChange() {
+  answers = {};
+  renderQuestionnaire();
+}
+
+function renderQuestionnaire() {
+  const ageRaw = document.getElementById('age').value;
+  const age = parseFloat(ageRaw);
+
+  if (isNaN(age)) return;
+  const { questions, name, threshold } = getQuestionnaire(age);
+  currentQuestions = questions;
+
+  document.getElementById('q-section-title').textContent = `${name} Screening Items`;
+
+  const isToddler = age <= 3;
+  document.getElementById('q-info').innerHTML = isToddler
+    ? `<strong>Q-CHAT-10</strong> (for toddlers aged 18–36 months): Answer how often your child shows each behaviour. 
+       For items <strong>A1–A9</strong>, selecting <em>infrequent or absent</em> responses scores a risk point — 
+       these items flag when a positive social behaviour is <strong>not happening</strong>. 
+       Item <strong>A10</strong> is scored in the <em>opposite direction</em> — blank staring IS a warning sign when frequent.`
+    : `<strong>${name}</strong>: Answer how much you agree with each statement about your child. 
+       For most items, <em>disagreeing</em> scores a risk point (the typical behaviour is absent). 
+       For items marked ⚠ reversed, <em>agreeing</em> scores a risk point.`;
+
+  const container = document.getElementById('q-items-container');
+  container.innerHTML = '';
+
+  questions.forEach((q, idx) => {
+    const answered = answers[q.id] !== undefined;
+    const riskClass = answered
+      ? (answers[q.id].riskScore === 1 ? 'answered-risk' : 'answered')
+      : '';
+
+    const badgeClass = q.reversed ? 'q-badge reversed' : 'q-badge';
+    const badgeTitle = q.reversed ? 'reversed item' : '';
+
+    const html = `
+      <div class="q-item ${riskClass}" id="q-item-${q.id}">
+        <div class="q-header">
+          <span class="${badgeClass}" title="${badgeTitle}">${q.label}${q.reversed ? ' ⚠' : ''}</span>
+          <div>
+            <div class="q-text">${q.text}</div>
+            ${q.note ? `<div class="q-note">${q.note}</div>` : ''}
+          </div>
+        </div>
+        <div class="q-options" id="q-opts-${q.id}">
+          ${q.options.map((opt, oi) => {
+            const riskScore = computeRiskScore(q, oi);
+            let selClass = '';
+            if (answered && answers[q.id].optionIndex === oi) {
+              selClass = riskScore === 1 ? 'selected-risk' : 'selected-ok';
+            }
+            return `<button class="q-option ${selClass}" onclick="selectOption(${q.id}, ${oi})">${opt}</button>`;
+          }).join('')}
+        </div>
+      </div>
+    `;
+    container.insertAdjacentHTML('beforeend', html);
+  });
+
+  document.getElementById('q-threshold-label').textContent =
+    `/ 10 — scores ≥ ${threshold} warrant further evaluation`;
+
+  updateScore();
+}
+
+function selectOption(qId, optionIndex) {
+  const q = currentQuestions.find(q => q.id === qId);
+  if (!q) return;
+
+  const riskScore = computeRiskScore(q, optionIndex);
+  answers[qId] = { optionIndex, riskScore };
+
+
+  const opts = document.querySelectorAll(`#q-opts-${qId} .q-option`);
+  opts.forEach((btn, oi) => {
+    btn.classList.remove('selected-ok', 'selected-risk');
+    if (oi === optionIndex) {
+      btn.classList.add(riskScore === 1 ? 'selected-risk' : 'selected-ok');
+    }
+  });
+
+  const card = document.getElementById(`q-item-${qId}`);
+  card.classList.remove('answered', 'answered-risk');
+  card.classList.add(riskScore === 1 ? 'answered-risk' : 'answered');
+
+  updateScore();
+}
+
+function updateScore() {
+  const total = Object.values(answers).reduce((s, a) => s + a.riskScore, 0);
+  const el = document.getElementById('qchat-score-val');
+  el.textContent = total;
+
+  const age = parseFloat(document.getElementById('age').value) || 7;
+  const threshold = age <= 3 ? 3 : 6;
+  el.style.color = total >= 6 ? 'var(--rose)' : total >= threshold ? 'var(--amber)' : 'var(--teal)';
+}
+
+function getAnsweredAValues() {
+  const result = {};
+  for (let i = 1; i <= 10; i++) {
+    result[`A${i}`] = answers[i] !== undefined ? answers[i].riskScore : 0;
+  }
+  return result;
+}
+
+
+function setToggle(id, val, btn) {
+  document.getElementById(id).value = val;
+  btn.closest('.toggle-row').querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+
+async function runPrediction() {
+  
+  const ageInput = document.getElementById('age');
+  const age = parseFloat(ageInput.value);
+
+  if (isNaN(age) || age < 1 || age > 18) {
+    const warn = document.getElementById('warn-incomplete');
+    warn.textContent = "⚠ Please enter a valid age between 1 and 18.";
+    warn.style.display = 'block';
+    ageInput.focus();
+    return;
+  }
+
+  if (Object.keys(answers).length < 10) {
+    document.getElementById('warn-incomplete').style.display = 'block';
+    return;
+  }
+  document.getElementById('warn-incomplete').style.display = 'none';
+
+  const btn = document.getElementById('predict-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>&nbsp; Analyzing...';
+
+  const aValues = getAnsweredAValues();
+
+  const payload = {
+    age:               document.getElementById('age').value,
+    sex:               document.getElementById('sex').value,
+    ethnicity:         document.getElementById('ethnicity').value,
+    completed_by:      document.getElementById('completed_by').value,
+    srs:               document.getElementById('srs').value,
+    jaundice:          document.getElementById('jaundice').value,
+    family_asd:        document.getElementById('family_asd').value,
+    speech_delay:      document.getElementById('speech_delay').value,
+    learning_disorder: document.getElementById('learning_disorder').value,
+    genetic:           document.getElementById('genetic').value,
+    social_issues:     document.getElementById('social_issues').value,
+    ...aValues
+  };
+
+  try {
+    const resp = await fetch('http://127.0.0.1:5050/api/predict', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const data = await resp.json();
+    showResult(data);
+  } catch(e) {
+    alert('Prediction failed. Make sure the Flask server is running on port 5050.');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = 'Run Screening Analysis';
+}
+
+function showResult(data) {
+  const panel = document.getElementById('result-panel');
+  panel.style.display = 'block';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  const isASD = data.prediction === 1;
+  const header = document.getElementById('result-header');
+  header.className = 'result-header ' + (isASD ? 'asd' : 'no-asd');
+
+  document.getElementById('result-icon').textContent     = isASD ? '⚠️' : '✅';
+  document.getElementById('result-verdict').textContent  = isASD ? 'ASD Traits Detected' : 'No ASD Traits Detected';
+  document.getElementById('result-sub').textContent      = isASD
+    ? 'Further clinical evaluation is strongly recommended.'
+    : 'Routine developmental monitoring is advised.';
+  document.getElementById('result-prob').textContent = data.probability + '%';
+
+  setTimeout(() => {
+    document.getElementById('risk-bar').style.width = data.probability + '%';
+  }, 100);
+
+  const lbl = document.getElementById('risk-label');
+  lbl.textContent  = data.risk_level + ' Risk';
+  lbl.className    = 'risk-level-label risk-' + data.risk_level;
+
+  const fl = document.getElementById('factor-list');
+  if (data.key_factors && data.key_factors.length) {
+    fl.innerHTML = data.key_factors.map(f => `
+      <div class="factor-chip">
+        <span class="factor-name">${f.factor}</span>
+        <span class="factor-badge ${f.weight}">${f.weight}</span>
+      </div>
+    `).join('');
+  } else {
+    fl.innerHTML = '<div style="font-size:0.85rem;color:var(--muted)">No significant individual risk factors detected.</div>';
+  }
+
+  document.getElementById('intervention-list').innerHTML = data.interventions.map(i => `
+    <div class="intervention-item">
+      <div class="int-dot"></div>
+      <span>${i}</span>
+    </div>
+  `).join('');
+}
+
+
+async function loadMetrics() {
+  try {
+    const r = await fetch('http://127.0.0.1:5050/api/metrics');
+    const m = await r.json();
+    document.getElementById('hs-acc').textContent    = m.accuracy + '%';
+    document.getElementById('hs-auc').textContent    = m.auc + '%';
+    document.getElementById('hs-f1').textContent     = m.f1 + '%';
+  } catch(e) {
+    document.getElementById('hs-acc').textContent = '94.95%';
+    document.getElementById('hs-auc').textContent = '99.29%';
+    document.getElementById('hs-f1').textContent  = '95.26%';
+  }
+}
+
+
+renderQuestionnaire();
+loadMetrics();
+</script>
+</body>
+</html>

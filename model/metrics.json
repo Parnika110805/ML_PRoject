@@ -1,0 +1,11 @@
+{
+  "accuracy": 97.83,
+  "precision": 98.78,
+  "recall": 97.59,
+  "f1": 98.18,
+  "auc": 99.73,
+  "cv_mean": 97.58,
+  "cv_std": 0.92,
+  "n_features": 22,
+  "n_samples": 2066
+}
