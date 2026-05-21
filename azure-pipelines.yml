@@ -1,0 +1,76 @@
+# Starter pipeline
+# Flask + ML Project CI Pipeline
+# Builds the project, installs dependencies, and runs checks
+
+trigger:
+- main
+
+pool:
+  name: 'Azure Pipelines'
+
+steps:
+
+# Use Python
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.10'
+  displayName: 'Use Python 3.10'
+
+# Prepare SonarQube Analysis
+- task: SonarQubePrepare@8
+  inputs:
+    SonarQube: 'sonar'
+    scannerMode: 'CLI'
+    configMode: 'manual'
+    cliProjectKey: 'ML_PRoject.git'
+    cliProjectName: 'ML_PRoject.git'
+    cliSources: '.'
+  displayName: 'Prepare SonarQube Analysis'
+
+# Install dependencies
+- script: |
+    python -m pip install --upgrade pip
+    pip install -r requirements.txt
+  displayName: 'Install Dependencies'
+
+# Verify project structure
+- script: |
+    echo "Checking project files..."
+    ls -R
+  displayName: 'Check Project Structure'
+
+# Run model training script
+- script: |
+    python train_model.py
+  displayName: 'Train ML Model'
+
+# Run Flask app syntax check
+- script: |
+    python -m py_compile app.py
+  displayName: 'Validate Flask App'
+
+# Run SonarQube Analysis
+- task: SonarQubeAnalyze@8
+  displayName: 'Run SonarQube Analysis'
+
+# Publish SonarQube Quality Gate Result
+- task: SonarQubePublish@8
+  inputs:
+    pollingTimeoutSec: '300'
+  displayName: 'Publish SonarQube Quality Gate Result'
+
+# Publish model artifacts
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: 'model'
+    ArtifactName: 'ML_Model'
+    publishLocation: 'Container'
+  displayName: 'Publish Model Artifacts'
+
+# Publish plots
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: 'plots'
+    ArtifactName: 'Plots'
+    publishLocation: 'Container'
+  displayName: 'Publish Plot Artifacts'
