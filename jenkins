@@ -62,21 +62,9 @@ stages {
         }
     }
 
-    stage('Push To Docker Hub') {
+    stage('Docker Identity') {
         steps {
-            withCredentials([usernamePassword(
-                credentialsId: 'dockerhub',
-                usernameVariable: 'DOCKER_USER',
-                passwordVariable: 'DOCKER_PASS'
-            )]) {
-                bat '''
-                echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
-    
-                docker tag asd-project %DOCKER_USER%/asd-project:latest
-    
-                docker push %DOCKER_USER%/asd-project:latest
-                '''
-            }
+            bat 'docker info'
         }
     }
 }
