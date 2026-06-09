@@ -65,8 +65,8 @@ stages {
     stage('Push To Docker Hub') {
         steps {
             bat '''
-            docker tag asd-project yourdockerhubusername/asd-project:latest
-            docker push yourdockerhubusername/asd-project:latest
+            docker tag asd-project parnika11/asd-project:latest
+            docker push parnika11/asd-project:latest
             '''
         }
     }
