@@ -3,6 +3,7 @@ agent any
 
 environment {
     SCANNER_HOME = tool 'Sonar-scanner'
+    SONAR_TOKEN = credentials('sonar')
 }
 
 stages {
@@ -37,7 +38,7 @@ stages {
             -Dsonar.projectName=ASD_Project ^
             -Dsonar.sources=. ^
             -Dsonar.host.url=http://localhost:9000 ^
-            -Dsonar.token=squ_a8b412a33a94ba83d24bf44f45277c2bad83f5ac
+            -Dsonar.token=%SONAR_TOKEN%
             """
         }
     }
