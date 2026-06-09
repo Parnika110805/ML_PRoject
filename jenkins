@@ -62,11 +62,16 @@ stages {
         }
     }
 
-    stage('Docker Login') {
+    stage('Docker Login Test') {
         steps {
-            withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'U', passwordVariable: 'P')]) {
-                bat 'echo %P% | docker login -u %U% --password-stdin'
-            }
+            bat '''
+            docker logout
+    
+            docker login -u parnika11 -p dckr_pat_6GPdr9vzSsCk_-luqP68d1F5gvo
+    
+            docker tag asd-project parnika11/asd-project:latest
+            docker push parnika11/asd-project:latest
+            '''
         }
     }
 }
