@@ -70,6 +70,8 @@ stages {
                 passwordVariable: 'DOCKER_PASS'
             )]) {
                 powershell '''
+                Write-Output "User: $env:DOCKER_USER"
+                Write-Output "Token length: $($env:DOCKER_PASS.Length)"
                 $env:DOCKER_PASS | docker login -u $env:DOCKER_USER --password-stdin
                 '''
             }
