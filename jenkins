@@ -62,7 +62,7 @@ stages {
         }
     }
 
-    stage('Check Docker Credential') {
+    stage('Docker Login Test') {
         steps {
             withCredentials([usernamePassword(
                 credentialsId: 'dockerhub',
@@ -70,7 +70,7 @@ stages {
                 passwordVariable: 'DOCKER_PASS'
             )]) {
                 bat '''
-                echo Username=%DOCKER_USER%
+                echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
                 '''
             }
         }
