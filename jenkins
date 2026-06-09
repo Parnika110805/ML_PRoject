@@ -62,16 +62,15 @@ stages {
         }
     }
 
-    stage('Credential Debug') {
+    stage('Docker Login Test') {
         steps {
             withCredentials([usernamePassword(
                 credentialsId: 'dockerhub',
                 usernameVariable: 'DOCKER_USER',
                 passwordVariable: 'DOCKER_PASS'
             )]) {
-                bat '''
-                echo Username=%DOCKER_USER%
-                powershell -Command "$env:DOCKER_PASS.Length"
+                powershell '''
+                $env:DOCKER_PASS | docker login -u $env:DOCKER_USER --password-stdin
                 '''
             }
         }
