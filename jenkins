@@ -1,66 +1,78 @@
 pipeline {
-    agent any
+agent any
 
-    environment {
-        SCANNER_HOME = tool 'Sonar-scanner'
+environment {
+    SCANNER_HOME = tool 'Sonar-scanner'
+    SONAR_TOKEN = credentials('sonar')
+}
+
+stages {
+
+    stage('Git Checkout') {
+        steps {
+            git branch: 'main',
+                url: 'https://github.com/Parnika110805/ML_PRoject.git'
+        }
     }
 
-    stages {
-
-        stage('Git Checkout') {
-            steps {
-                git branch: 'main',
-                    url: 'https://github.com/Parnika110805/ML_PRoject.git'
-            }
+    stage('Run Tests') {
+        steps {
+            echo 'No tests configured'
         }
+    }
 
-        stage('SonarQube Analysis') {
-            steps {
-                bat """
-                ${SCANNER_HOME}\\bin\\sonar-scanner.bat ^
-                -Dsonar.projectKey=ASD_Project ^
-                -Dsonar.projectName=ASD_Project ^
-                -Dsonar.sources=. ^
-                -Dsonar.host.url=http://localhost:9000 ^
-                -Dsonar.token=%SONAR_TOKEN%
-                """
-            }
+    stage('SonarQube Analysis') {
+        steps {
+            bat """
+            ${SCANNER_HOME}\\bin\\sonar-scanner.bat ^
+            -Dsonar.projectKey=ASD_Project ^
+            -Dsonar.projectName=ASD_Project ^
+            -Dsonar.sources=. ^
+            -Dsonar.host.url=http://localhost:9000 ^
+            -Dsonar.token=%SONAR_TOKEN%
+            """
         }
+    }
 
-        stage('Dependency Check') {
-            steps {
-                dependencyCheck additionalArguments: '--scan ./',
-                                odcInstallation: 'DP'
+    stage('OWASP Dependency Check') {
+        steps {
+            dependencyCheck additionalArguments: '--scan ./',
+                            odcInstallation: 'DP'
 
-                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
-            }
+            dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
         }
+    }
 
-        stage('Build Docker Image') {
-            steps {
-                bat 'docker build -t asd-project .'
-            }
+    stage('Build Docker Image') {
+        steps {
+            bat '''
+            docker build -t asd-project .
+            '''
         }
+    }
+    
+    stage('Deploy Container') {
+        steps {
+            bat '''
+            docker stop asd-project-container 2>nul
+            docker rm asd-project-container 2>nul
+    
+            docker run -d --name asd-project-container -p 5000:5000 asd-project
+            '''
+        }
+    }
 
-        stage('Deploy Container') {
-            steps {
+    stage('Push to Docker Hub') {
+        steps {
+            withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'U', passwordVariable: 'P')]) {
                 bat '''
-                docker rm -f asd-project-container 2>nul
-                docker run -d --name asd-project-container -p 5000:5000 asd-project
+                docker login -u %U% -p %P%
+                docker tag asd-project %U%/asd-project:latest
+                docker push %U%/asd-project:latest
                 '''
             }
         }
-
-        stage('Push to Docker Hub') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'U', passwordVariable: 'P')]) {
-                    bat '''
-                    docker login -u %U% -p %P%
-                    docker tag asd-project %U%/asd-project:latest
-                    docker push %U%/asd-project:latest
-                    '''
-                }
-            }
-        }
     }
+}
+
 }
