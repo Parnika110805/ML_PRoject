@@ -1,0 +1,61 @@
+pipeline {
+agent any
+
+environment {
+    SCANNER_HOME = tool 'Sonar-scanner'
+}
+
+stages {
+
+    stage('Git Checkout') {
+        steps {
+            git branch: 'main',
+                url: 'https://github.com/Parnika110805/ML_PRoject.git'
+        }
+    }
+
+    stage('Install Dependencies') {
+        steps {
+            bat '''
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+            '''
+        }
+    }
+
+    stage('Run Tests') {
+        steps {
+            echo 'No tests configured'
+        }
+    }
+
+    stage('SonarQube Analysis') {
+        steps {
+            bat """
+            ${SCANNER_HOME}\\bin\\sonar-scanner.bat ^
+            -Dsonar.projectKey=ASD_Project ^
+            -Dsonar.projectName=ASD_Project ^
+            -Dsonar.sources=. ^
+            -Dsonar.host.url=http://localhost:9000 ^
+            -Dsonar.token=YOUR_SONAR_TOKEN
+            """
+        }
+    }
+
+    stage('OWASP Dependency Check') {
+        steps {
+            dependencyCheck additionalArguments: '--scan ./',
+                            odcInstallation: 'DP'
+
+            dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+        }
+    }
+
+    stage('Deploy') {
+        steps {
+            echo 'Python application deployed successfully'
+        }
+    }
+}
+
+}
