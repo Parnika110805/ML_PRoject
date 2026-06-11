@@ -978,7 +978,7 @@ async function runPrediction() {
   };
 
   try {
-    const resp = await fetch('http://127.0.0.1:5050/api/predict', {
+    const resp = await fetch('http://127.0.0.1:5000/api/predict', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(payload)
@@ -986,7 +986,7 @@ async function runPrediction() {
     const data = await resp.json();
     showResult(data);
   } catch(e) {
-    alert('Prediction failed. Make sure the Flask server is running on port 5050.');
+    alert('Prediction failed. Make sure the Flask server is running on port 5000.');
   }
 
   btn.disabled = false;
@@ -1040,7 +1040,7 @@ function showResult(data) {
 
 async function loadMetrics() {
   try {
-    const r = await fetch('http://127.0.0.1:5050/api/metrics');
+    const r = await fetch('http://127.0.0.1:5000/api/metrics');
     const m = await r.json();
     document.getElementById('hs-acc').textContent    = m.accuracy + '%';
     document.getElementById('hs-auc').textContent    = m.auc + '%';
